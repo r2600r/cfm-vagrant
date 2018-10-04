@@ -21,13 +21,14 @@ ls
 
 ## 2. Add Non-LCM BMS node
 
-In our topology BMS is also a VM and two BMS Non-LCM servers "l-srv4 & l-srv5" are already added during "Server Addition" step of Infrastructure creation.
+In our topology BMS is also a VM and two BMS Non-LCM servers "l-srv3 & l-srv4 " are already added during "Server Addition" step of Infrastructure creation.
 
 ![Fabric Creation](images/Fabric-Add-BMS-server.png)
 
 ```bash
-# Get MAC address of srv4 eth2 interface
+# Get MAC address of l-srv4 eth2 interface
 
+ vagrant ssh l-svr4
 ip link show eth2
 4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000
     link/ether 08:00:27:8a:7d:b1 brd ff:ff:ff:ff:ff:ff
@@ -47,18 +48,10 @@ Update default security group for ingress rule and allow all traffic.
 
 ![Fabric Creation](images/Fabric-BMS-Instance-01.png)
 
-```bash
-dhclient eth2
-
-# In case you have to kill dhclient and renew the IP use following steps
-pkill dhclient
-dhclient eth2
- ```
-
-On CSN node "s-srv3" monitor DHCP request from BMS instances and check right IP is assigned to BMS instance. In our case 10.1.1.100 is assigned to BMS instance "bms1"
+On CSN node "s-srv3" monitor DHCP request from BMS instances and check right IP is assigned to BMS instance. In our case 10.1.1.100 is assigned to BMS instance "bms1(l-srv3)"
 
 
-```bash
+```python
 tcpdump -nei eth2 port 4789
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth2, link-type EN10MB (Ethernet), capture size 262144 bytes
@@ -81,6 +74,29 @@ Note: In case tcpdump is not installed please install using following command.
 ```bash
 yum install -y tcpdump
  ```
+
+In another window, enable dhcp on BMS l-srv3 eth2 interface, the interface should receive IP from CSN
+
+```python
+vagrant ssh l-svr3
+dhclient eth2
+
+[root@l-srv3 ~]# ip addr show eth2
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 08:00:27:a2:fc:79 brd ff:ff:ff:ff:ff:ff
+    inet 172.16.2.103/24 brd 172.16.2.255 scope global noprefixroute eth2
+       valid_lft forever preferred_lft forever
+    inet 10.1.1.100/24 brd 10.1.1.255 scope global eth2
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fea2:fc79/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+# In case you have to kill dhclient and renew the IP use following steps
+pkill dhclient
+dhclient eth2
+ ```
+
 
 ## 5. Configuration Pushed to vQFX
 
@@ -130,7 +146,9 @@ set groups __contrail__ vlans contrail_VN-01-l2-4 vxlan vni 4
 ## 3. BMS instance connection to VM
 
 ```bash
-[root@srv4 vagrant]# dhclient -v eth2
+[root@l-srv3 vagrant]# pkill dhclient
+
+[root@l-srv3 vagrant]# dhclient -v eth2
 Internet Systems Consortium DHCP Client 4.2.5
 Copyright 2004-2013 Internet Systems Consortium.
 All rights reserved.
@@ -144,14 +162,16 @@ DHCPREQUEST on eth2 to 255.255.255.255 port 67 (xid=0x6a053491)
 DHCPOFFER from 10.1.1.2
 DHCPACK from 10.1.1.2 (xid=0x6a053491)
 bound to 10.1.1.4 -- renewal in 2147483646 seconds.
-[root@srv4 vagrant]# ip address show eth2
+
+[root@l-srv3 vagrant]# ip address show eth2
 4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
     link/ether 08:00:27:83:33:ad brd ff:ff:ff:ff:ff:ff
     inet 10.1.1.4/24 brd 10.1.1.255 scope global noprefixroute eth2
        valid_lft forever preferred_lft forever
     inet6 fe80::a00:27ff:fe83:33ad/64 scope link
        valid_lft forever preferred_lft forever
-[root@srv4 vagrant]# ping 10.1.1.3
+
+[root@l-srv3 vagrant]# ping 10.1.1.3
 PING 10.1.1.3 (10.1.1.3) 56(84) bytes of data.
 64 bytes from 10.1.1.3: icmp_seq=1 ttl=64 time=502 ms
 64 bytes from 10.1.1.3: icmp_seq=2 ttl=64 time=185 ms
@@ -160,7 +180,7 @@ PING 10.1.1.3 (10.1.1.3) 56(84) bytes of data.
 rtt min/avg/max/mdev = 101.738/263.033/502.330/172.591 ms
 
 # DNS servcie is also provided by Contrail Service Node and you can test Contrail DNS reachability by pinging DNS IP 10.1.1.2
-[root@srv4 vagrant]#ping 10.1.1.2
+[root@l-srv3 vagrant]#ping 10.1.1.2
 PING 10.1.1.2 (10.1.1.2) 56(84) bytes of data.
 64 bytes from 10.1.1.2: icmp_seq=1 ttl=64 time=102 ms
 64 bytes from 10.1.1.2: icmp_seq=2 ttl=64 time=101 ms

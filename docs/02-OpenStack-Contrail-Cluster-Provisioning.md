@@ -7,7 +7,18 @@ Username/Password:   admin/contrail123
 Note: Please make sure your Foxyproxy Firefox/Chrome plugin is setup before proceeding.
 
 ## 1. Add Servers
-You can add servers one by one or in bulk. In case of bulk server add use following file and **update the MAC addresses for l-srv3 & l-srv4 BMS nodes**.
+You can add servers one by one or in bulk. In case of bulk server add use following CSV file and **update the MAC addresses for l-srv3 & l-srv4 BMS nodes**.
+```bash
+To get the MAC address of l-srv3 simply run the command "vagrant ssh -c 'cat /sys/class/net/eth2/address' l-srv3" from the vagrant directory. Other way
+is to ssh to the l-srv3 VM
+
+root@CFM-workshop:~/cfm-vagrant/cfm-1x1-vqfx-7srv# vagrant ssh -c 'cat /sys/class/net/eth2/address' l-srv3
+08:00:27:a2:fc:79
+Connection to 127.0.0.1 closed.
+root@CFM-workshop:~/cfm-vagrant/cfm-1x1-vqfx-7srv# vagrant ssh -c 'cat /sys/class/net/eth2/address' l-srv4
+08:00:27:ec:2f:3a
+Connection to 127.0.0.1 closed.
+```
 
 ### [Bulk Server Add csv file](images/1x1-vQFX-7-Servers-Bulk.csv)
 
