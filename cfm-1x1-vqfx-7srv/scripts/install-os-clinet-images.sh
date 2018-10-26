@@ -1,7 +1,5 @@
 #!/bin/bash -eux
 
-#!/bin/bash -eux
-
 # This script will perform following actions:
 # - install OpenStack client
 # - Download and Add cirros images
@@ -26,7 +24,10 @@ source /etc/kolla/kolla-toolbox/admin-openrc.sh
 wget http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
 openstack image create cirros2 --disk-format qcow2 --public --container-format bare --file cirros-0.4.0-x86_64-disk.img
 
-#download lab Ubunt image
+download lab Ubunt image
+curl https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img -o trusty-server-cloudimg-amd64-disk1.img
+source /etc/kolla/kolla-toolbox/admin-openrc.sh
+openstack image create --disk-format qcow2 --container-format bare --public --file trusty-server-cloudimg-amd64-disk1.img ubuntu-lab
 #wget  http://10.10.16.104/trusty-server-cloudimg-amd64-disk1.img
 #openstack image create --disk-format qcow2 --container-format bare --public --file trusty-server-cloudimg-amd64-disk1.img ubuntu-lab
 
